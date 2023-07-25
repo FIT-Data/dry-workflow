@@ -1,0 +1,170 @@
+name: Deploy Service/Web App
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: 'Name of service/web app'
+        required: false
+        type: string
+      published_port:
+        required: true
+        type: number
+      target_port:
+        required: false
+        type: number
+        default: 3300
+      compose_file:
+        required: false
+        type: string
+      docker_context:
+        required: true
+        type: string
+    secrets:
+      cr_username:
+        required: true
+      cr_token:
+        required: true
+
+env:
+  SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
+
+jobs:
+
+  define:
+    runs-on: ubuntu-latest
+
+    outputs:
+      nodeEnv: ${{ steps.nodeEnv.outputs.value }}
+      composeFile: ${{ steps.composeFile.outputs.value }}
+      runner: ${{ steps.runner.outputs.value }}
+
+    steps:
+      - id: nodeEnv
+        run: |
+          if ${{endsWith(github.event.ref, 'prod')}}
+          then
+            echo "value=production" >> $GITHUB_OUTPUT
+            echo "::notice title=NODE_ENV::production"
+          elif ${{endsWith(github.event.ref, 'staging')}}
+          then
+            echo "value=staging" >> $GITHUB_OUTPUT
+            echo "::notice title=NODE_ENV::staging"
+          elif ${{endsWith(github.event.ref, 'release')}}
+          then
+            echo "value=release" >> $GITHUB_OUTPUT
+            echo "::notice title=NODE_ENV::release"
+          else
+            echo "value=development" >> $GITHUB_OUTPUT
+            echo "::notice title=NODE_ENV::development"
+          fi
+      - id: composeFile
+        run: |
+          if ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'prod')}}
+          then
+            echo "value=prod-stack" >> $GITHUB_OUTPUT
+            echo "::notice title=composeFile::prod-stack"
+          elif ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'dev')}}
+          then
+            echo "value=dev-stack" >> $GITHUB_OUTPUT
+            echo "::notice title=composeFile::dev-stack"
+          elif ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'staging')}}
+          then
+            echo "value=staging-stack" >> $GITHUB_OUTPUT
+            echo "::notice title=composeFile::staging-stack"
+          elif ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'release')}}
+          then
+            echo "value=release-stack" >> $GITHUB_OUTPUT
+            echo "::notice title=composeFile::release-stack"
+          else
+            # echo "value=${{ inputs.compose_file }}" >> $GITHUB_OUTPUT
+            # echo "::notice title=composeFile::${{ inputs.compose_file }}"
+            echo "value=stack" >> $GITHUB_OUTPUT
+            echo "::notice title=composeFile::stack"
+          fi
+      - name: Check Branch
+        run : echo "::notice title=branch::${{ github.event.base_ref }}"
+
+  metadata:
+    runs-on: ubuntu-latest 
+
+    outputs:
+      imageTag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Docker Meta
+        id: meta
+        run: echo "tags=pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT 
+
+      - name: Notice Meta
+        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+
+  swarm-deploy:
+    needs: [metadata, define]
+    runs-on: [self-hosted]
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.cr_username }} 
+          password: ${{ secrets.cr_token }}
+      
+      - name: Set Context
+        run: docker context use ${{ inputs.docker_context }}
+
+      - name: Check stack
+        run: echo "STACK=$(docker stack ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV
+
+      - uses: actions/setup-node@v3
+        if: env.STACK == 0
+        with:
+          node-version: '12'
+
+      - run: npm install -g mustache
+        if: env.STACK == 0
+
+      - name: Set template variable
+        if: env.STACK == 0
+        run: |
+          cat<<EOT > deployment/templates/config.json
+          {
+            "service_name": "${{ env.SERVICE_NAME }}",
+            "image": "${{ needs.metadata.outputs.imageTag }}",
+            "node_env": "${{ needs.define.outputs.nodeEnv }}",
+            "target_port": "${{ inputs.target_port }}",
+            "published_port": "${{ inputs.published_port }}"
+          }
+          EOT
+
+      - name: debug config.json for mustache
+        if: env.STACK == 0
+        run: cat deployment/templates/config.json
+
+      - name: Set Variable in Compose
+        if: env.STACK == 0
+        run: mustache deployment/templates/config.json deployment/templates/${{ needs.define.outputs.composeFile }}.mustache > deployment/${{ needs.define.outputs.composeFile }}.yml
+
+      - name: Check Service Network
+        if: env.STACK == 0
+        id: network
+        run: |
+          docker network ls > tmp
+          if grep -wq public tmp; then echo "::notice title=network exist::public network already exist" ; else echo "create=true" >> $GITHUB_OUTPUT; fi
+
+      - name: Create Service Network
+        if: steps.network.outputs.create
+        run: docker network create -d overlay --attachable public
+
+      - name: Stack deploy
+        if: env.STACK == 0
+        run: docker stack deploy --resolve-image=always --with-registry-auth --compose-file deployment/${{ needs.define.outputs.composeFile }}.yml ${{ env.SERVICE_NAME }}
+
+      - name: Update current service
+        if: env.STACK == 1
+        run: docker service update --health-retries 3 --health-interval 5s --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}_${{ env.SERVICE_NAME }}
+     
+      - name: Restore Docker Context To Default
+        run: docker context use default

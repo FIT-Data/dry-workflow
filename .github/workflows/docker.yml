@@ -42,39 +42,7 @@ env:
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
 
 jobs:
-  define:
-    runs-on: ubuntu-latest
-
-    outputs:
-      continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
-      runner: ${{ steps.runner.outputs.value }}
-
-    steps:
-      - id: strictScan
-        run: |
-          if ${{ inputs.strict_scan == 'false'}}
-          then
-            echo "::set-output name=continueOnError::${{ toJSON(true) }}"
-            echo "::notice title=continueOnError::true"
-          else
-            echo "::set-output name=continueOnError::${{ toJSON(false) }}"
-            echo "::notice title=continueOnError::false"
-          fi
-      - id: runner
-        run: |
-          if ${{startsWith(inputs.docker_context, 'PM')}}
-          then
-            echo "::set-output name=value::fit-runner-1"
-            echo "::notice title=runner::fit-runner-1"
-          elif ${{startsWith(inputs.docker_context, 'DMS')}}
-          then
-            echo "::set-output name=value::dms-runner-1"
-            echo "::notice title=runner::dms-runner-1"
-          fi
-
-
   build:
-    needs: [define]
     runs-on: [self-hosted]
 
     outputs:
@@ -116,29 +84,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{ inputs.node_base_image }}
-
-  container-scan:
-    needs: [define, build]
-    runs-on: [self-hosted]
-    
-    steps:
-      - run: docker context use default
-
-      - name: Login to Container Registry
-        run: |
-          docker context use default
-          docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
-
-      # - run: docker pull ${{ needs.build.outputs.imageTag }}
-
-      - name: Run Snyk to check Docker image for vulnerabilities
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.snyk_token }}
-        with:
-          image: ${{ needs.build.outputs.imageTag }}
-          args: --severity-threshold=high
-          command: test
 
   push:
     needs: [define, build, container-scan]

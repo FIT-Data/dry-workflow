@@ -93,11 +93,6 @@ jobs:
       - name: Push Docker Image to Container Registry
         run: docker push ${{ steps.meta.outputs.tags }}
 
-  runner-cleanup:
-    needs: [build-push]
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Prune Images
         run: |
           docker context use default

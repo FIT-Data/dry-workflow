@@ -42,7 +42,7 @@ env:
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
 
 jobs:
-  build:
+  build-push:
     runs-on: ubuntu-latest
 
     outputs:
@@ -85,11 +85,6 @@ jobs:
           build-args: |
             NODE_BASE=${{ inputs.node_base_image }}
 
-  push:
-    needs: [build]
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Check Build Result
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
@@ -99,7 +94,7 @@ jobs:
         run: docker push ${{ needs.build.outputs.imageTag }}
 
   runner-cleanup:
-    needs: [push]
+    needs: [build-push]
     runs-on: ubuntu-latest
 
     steps:

@@ -86,7 +86,7 @@ jobs:
             NODE_BASE=${{ inputs.node_base_image }}
 
   push:
-    needs: [define, build, container-scan]
+    needs: [build]
     runs-on: [self-hosted]
 
     steps:
@@ -99,7 +99,7 @@ jobs:
         run: docker push ${{ needs.build.outputs.imageTag }}
 
   runner-cleanup:
-    needs: [define, push]
+    needs: [push]
     runs-on: [self-hosted]
 
     steps:

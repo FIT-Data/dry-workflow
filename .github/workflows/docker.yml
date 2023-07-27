@@ -14,7 +14,7 @@ on:
       node_base_image:
         required: false
         type: string
-        default: pinjammodal/node:12.22.9-3.14
+        default: python:3.9-slim
       env_file:
         description: 'Use to load environment variable from file'
         required: false

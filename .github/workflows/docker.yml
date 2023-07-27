@@ -91,7 +91,7 @@ jobs:
           if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
 
       - name: Push Docker Image to Container Registry
-        run: docker push ${{ needs.build.outputs.imageTag }}
+        run: docker push ${{ steps.meta.outputs.tags }}
 
   runner-cleanup:
     needs: [build-push]

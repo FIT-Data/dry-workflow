@@ -1,1 +1,55 @@
+name: Deploy
 
+on:
+  push:
+    tags:
+      - v*-dev-pull
+      - v*-prod-pull
+
+jobs:
+  
+  check:
+    runs-on: [self-hosted]
+    steps:
+      - run : |
+          echo ${{github.event.base_ref}}
+          echo ${{github.event.ref}}
+          echo ${{github.repository}}
+          
+  development:
+    runs-on: [self-hosted]
+    if: (github.event.base_ref != 'refs/heads/production') && (endsWith(github.event.ref, 'dev-pull'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Pull Repo
+        run: |
+          ls 
+          pwd
+          if [ -d "/home/data-team/airflow/dags/${{ github.event.repository.name }}" ]; then
+            rm -rf /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            mkdir /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            cp -R . /home/data-team/airflow/dags/${{ github.event.repository.name }}
+          else
+            mkdir /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            cp -R . /home/data-team/airflow/dags/${{ github.event.repository.name }}
+          fi
+
+  production:      
+    runs-on: [self-hosted]
+    if: (github.event.base_ref = 'refs/heads/production') && (endsWith(github.event.ref, 'prod-pull'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Pull Repo
+        run: |
+          ls 
+          pwd
+          if [ -d "/home/data-team/airflow/dags/${{ github.event.repository.name }}" ]; then
+            rm -rf /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            mkdir /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            cp -R . /home/data-team/airflow/dags/${{ github.event.repository.name }}
+          else
+            mkdir /home/data-team/airflow/dags/${{ github.event.repository.name }}
+            cp -R . /home/data-team/airflow/dags/${{ github.event.repository.name }}
+          fi

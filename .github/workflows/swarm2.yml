@@ -158,6 +158,9 @@ jobs:
         if: steps.network.outputs.create
         run: docker network create -d overlay --attachable public
 
+      - name: Pull Images
+        run: docker pull ${{ needs.metadata.outputs.imageTag }}
+
       - name: Stack deploy
         if: env.SERVICE == 0
         run: |

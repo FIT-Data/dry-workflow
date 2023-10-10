@@ -125,20 +125,7 @@ jobs:
 
       - run: npm install -g mustache
         if: env.SERVICE == 0
-
-      - name: Set template variable
-        if: env.SERVICE == 0
-        run: |
-          cat<<EOT > deployment/templates/config.json
-          {
-            "service_name": "${{ env.SERVICE_NAME }}",
-            "image": "${{ needs.metadata.outputs.imageTag }}",
-            "node_env": "${{ needs.define.outputs.nodeEnv }}",
-            "target_port": "${{ inputs.target_port }}",
-            "published_port": "${{ inputs.published_port }}"
-          }
-          EOT
-
+        
       - name: debug config.json for mustache
         if: env.SERVICE == 0
         run: cat deployment/templates/config.json

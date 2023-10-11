@@ -122,18 +122,7 @@ jobs:
         if: env.SERVICE == 0
         with:
           node-version: '12'
-
-      - run: npm install -g mustache
-        if: env.SERVICE == 0
-        
-      - name: debug config.json for mustache
-        if: env.SERVICE == 0
-        run: cat deployment/templates/config.json
-
-      - name: Set Variable in Compose
-        if: env.SERVICE == 0
-        run: mustache deployment/templates/config.json deployment/templates/${{ needs.define.outputs.composeFile }}.mustache > deployment/${{ needs.define.outputs.composeFile }}.yml
-
+          
       - name: Check Service Network
         if: env.SERVICE == 0
         id: network

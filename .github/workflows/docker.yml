@@ -53,28 +53,28 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set manifest deployement
-        id: manifest_key
+        id: manifest
         run: |
           cd deployment/templates/
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
             NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
             NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
             NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           else
             manifest=$(cat release.yml)
             NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           fi
         
 

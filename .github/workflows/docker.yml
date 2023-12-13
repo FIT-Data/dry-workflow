@@ -87,7 +87,9 @@ jobs:
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
       - name: Notice meta
-        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+        run: |
+          echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+          echo "::notice title=manifest_key manifest created::${{ steps.manifest_key.outputs.node_value }}"
 
       - name: Set Context Default
         run: docker context use default

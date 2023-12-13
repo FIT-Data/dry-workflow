@@ -47,26 +47,30 @@ jobs:
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
+      nodeBase: ${{ steps.manifest.outputs.node_bases }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set manifest deployement
+        id: manifest
         run: |
           cd deployment/templates/
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
             # echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
             # echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
@@ -78,9 +82,9 @@ jobs:
             echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           fi
         
-      - name: Notice meta
-        run: |
-          echo "NODE_BASE: $node_value"
+      # - name: Notice meta
+      #   run: |
+      #     echo "NODE_BASE: $node_value"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -90,7 +94,10 @@ jobs:
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
       - name: Notice meta
-        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+        run: |
+          echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+          echo "::notice title=manifest node_base created::${{ steps.manifest.outputs.node_bases }}"
+
 
       - name: Set Context Default
         run: docker context use default
@@ -108,7 +115,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=$node_base
+            NODE_BASE=${{ steps.manifest.outputs.node_bases }}
 
       - name: Check Build Result
         run: |

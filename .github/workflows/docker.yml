@@ -107,7 +107,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=$node_value
+            echo "NODE_BASE: $node_value"
 
       - name: Check Build Result
         run: |

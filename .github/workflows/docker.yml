@@ -79,7 +79,7 @@ jobs:
         
       - name: Notice meta
         run: |
-          echo "NODE_BASE: $Key3"
+          echo "NODE_BASE: $node_value"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

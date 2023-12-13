@@ -58,22 +58,24 @@ jobs:
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           else
             manifest=$(cat release.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           fi
         
       - name: Notice meta
@@ -106,7 +108,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=$node_value
+            NODE_BASE=${{ env.node_base}}
 
       - name: Check Build Result
         run: |

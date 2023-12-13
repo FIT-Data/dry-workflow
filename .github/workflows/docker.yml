@@ -45,7 +45,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set manifest deployement
+      - name: Set manifest deployment
         id: manifest
         run: |
           cd deployment/templates/

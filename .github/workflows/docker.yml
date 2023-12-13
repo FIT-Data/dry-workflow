@@ -61,25 +61,17 @@ jobs:
           then
             manifest=$(cat production.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            # echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            # echo "::set-env name=node_base::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            # NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            # echo "node_value=$NODE_BASE" >> $GITHUB_ENV
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
           else
             manifest=$(cat release.yml)
-            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
-            echo "node_value=$NODE_BASE" >> $GITHUB_ENV
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
           fi
         
       # - name: Notice meta

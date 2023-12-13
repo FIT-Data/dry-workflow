@@ -11,18 +11,18 @@ on:
         required: false
         type: number
         default: 3300
-      node_base_image:
-        required: false
-        type: string
-        default: python:3.9-slim
+      # node_base_image:
+      #   required: false
+      #   type: string
+      #   default: python:3.9-slim
       env_file:
         description: 'Use to load environment variable from file'
         required: false
         type: string
-      strict_scan:
-        required: false
-        type: string
-        default: true
+      # strict_scan:
+      #   required: false
+      #   type: string
+      #   default: true
     secrets:
       cr_username:
         required: true
@@ -39,7 +39,7 @@ on:
 
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
-  STRICT_SCAN: ${{ inputs.strict_scan || false }}
+  # STRICT_SCAN: ${{ inputs.strict_scan || false }}
 
 jobs:
   build-push:
@@ -47,11 +47,37 @@ jobs:
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
+      node: ${{ steps.manifest_key.outputs.node_value }}
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set manifest deployement
+        id: manifest_key
+        run: |
+          cd deployment/templates/
+          if ${{endsWith(github.event.ref, 'prod')}}
+          then
+            manifest=$(cat production.yml)
+            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+          elif ${{endsWith(github.event.ref, 'dev')}}
+          then
+            manifest=$(cat development.yml)
+            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+          elif ${{endsWith(github.event.ref, 'staging')}}
+          then
+            manifest=$(cat staging.yml)
+            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+          else
+            manifest=$(cat release.yml)
+            NODE_BASE=$(echo "$manifest" | yq eval '.node_base_image' -)
+            echo "node_value=${NODE_BASE}" >> $GITHUB_ENV
+          fi
+        
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -72,10 +98,6 @@ jobs:
           username: ${{ secrets.cr_username }} 
           password: ${{ secrets.cr_token }}
 
-      - name: Load Environment Variable
-        if: inputs.env_file != ''
-        run: source ${{ inputs.env_file }}
-
       - name: Build Docker
         uses: docker/build-push-action@v3.1.1
         with:
@@ -83,7 +105,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=${{ inputs.node_base_image }}
+            NODE_BASE=${{ steps.manifest_key.outputs.node_value }}
 
       - name: Check Build Result
         run: |

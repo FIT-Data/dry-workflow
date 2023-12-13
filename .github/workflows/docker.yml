@@ -47,7 +47,6 @@ jobs:
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
-      node: ${{ steps.manifest_key.outputs.node_value }}
 
     steps:
       - name: Checkout Repository
@@ -87,9 +86,7 @@ jobs:
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
       - name: Notice meta
-        run: |
-          echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
-          echo "::notice title=manifest_key manifest created::${{ steps.manifest_key.outputs.node_value }}"
+        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
 
       - name: Set Context Default
         run: docker context use default
@@ -107,7 +104,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=${{ steps.manifest_key.outputs.node_value }}
+            NODE_BASE=$node_value
 
       - name: Check Build Result
         run: |

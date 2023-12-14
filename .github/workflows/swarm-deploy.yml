@@ -7,16 +7,6 @@ on:
         description: 'Name of service/web app'
         required: false
         type: string
-      published_port:
-        required: true
-        type: number
-      target_port:
-        required: false
-        type: number
-        default: 3300
-      docker_context:
-        required: true
-        type: string
     secrets:
       cr_username:
         required: true
@@ -33,9 +23,9 @@ jobs:
 
     outputs:
       nodeEnv: ${{ steps.nodeEnv.outputs.value }}
-      published_port: ${{ steps.manifest.outputs.published_port }}
-      target_port: ${{ steps.manifest.outputs.target_port }}
-      docker_context: ${{ steps.manifest.outputs.docker_context }}
+      publishedPort: ${{ steps.manifest.outputs.published_port }}
+      targetPort: ${{ steps.manifest.outputs.target_port }}
+      dockerContext: ${{ steps.manifest.outputs.docker_context }}
 
     steps:
       - name: Checkout Repository

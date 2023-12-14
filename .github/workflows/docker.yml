@@ -7,10 +7,6 @@ on:
         description: 'Name of service/web app'
         required: false
         type: string
-      target_port:
-        required: false
-        type: number
-        default: 3300
  
     secrets:
       cr_username:
@@ -28,7 +24,7 @@ jobs:
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
       nodeBase: ${{ steps.manifest.outputs.node_bases }}
-      target_port: ${{ steps.manifest.outputs.target_port }}
+      targetPort: ${{ steps.manifest.outputs.target_port }}
 
     steps:
       - name: Checkout Repository

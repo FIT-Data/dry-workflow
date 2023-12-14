@@ -23,9 +23,9 @@ jobs:
 
     outputs:
       nodeEnv: ${{ steps.nodeEnv.outputs.value }}
-      publishedPort: ${{ steps.manifest.outputs.published_port }}
-      targetPort: ${{ steps.manifest.outputs.target_port }}
-      dockerContext: ${{ steps.manifest.outputs.docker_context }}
+      publishedPort: ${{ steps.manifest.outputs.published_ports }}
+      targetPort: ${{ steps.manifest.outputs.target_ports }}
+      dockerContext: ${{ steps.manifest.outputs.docker_contexts }}
 
     steps:
       - name: Checkout Repository
@@ -38,26 +38,26 @@ jobs:
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
-            echo "::set-output name=published_port::$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "::set-output name=docker_context::$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
-            echo "::set-output name=published_port::$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "::set-output name=docker_context::$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
-            echo "::set-output name=published_port::$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "::set-output name=docker_context::$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
           else
             manifest=$(cat release.yml)
-            echo "::set-output name=published_port::$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "::set-output name=docker_context::$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
           fi
 
       - id: nodeEnv

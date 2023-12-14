@@ -126,7 +126,7 @@ jobs:
           password: ${{ secrets.cr_token }}
       
       - name: Set Context
-        run: docker context use ${{ inputs.docker_context }}
+        run: docker context use ${{ needs.define.outputs.docker_context }}
 
       - name: Check stack
         run: echo "SERVICE=$(docker service ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV

@@ -7,10 +7,6 @@ on:
         description: 'Name of service/web app'
         required: false
         type: string
-      target_port:
-        required: false
-        type: number
-        default: 3300
       env_file:
         description: 'Use to load environment variable from file'
         required: false

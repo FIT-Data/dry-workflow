@@ -40,6 +40,7 @@ jobs:
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
       nodeBase: ${{ steps.manifest.outputs.node_bases }}
+      target_port: ${{ steps.manifest.outputs.target_port }}
 
     steps:
       - name: Checkout Repository
@@ -53,17 +54,21 @@ jobs:
           then
             manifest=$(cat production.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           else
             manifest=$(cat release.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           fi
         
 
@@ -78,6 +83,7 @@ jobs:
         run: |
           echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
           echo "::notice title=manifest node_base created::${{ steps.manifest.outputs.node_bases }}"
+          echo "::notice title=manifest target_port created::${{ steps.manifest.outputs.target_port }}"
 
 
       - name: Set Context Default
@@ -97,6 +103,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{ steps.manifest.outputs.node_bases }}
+            TARGET_PORT=${{ steps.manifest.outputs.target_port}}
 
       - name: Check Build Result
         run: |

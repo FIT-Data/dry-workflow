@@ -21,15 +21,7 @@ on:
         required: true
       cr_token:
         required: true
-      signer_key:
-        required: true
-      dct_signer_priv_key:
-        required: true
-      signer_pass:
-        required: true
-      snyk_token:
-        required: true
-
+    
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
 

@@ -113,7 +113,7 @@ jobs:
           password: ${{ secrets.cr_token }}
       
       - name: Set Context
-        run: docker context use ${{ needs.define.outputs.docker_context }}
+        run: docker context use ${{ needs.define.outputs.dockerContext }}
 
       - name: Check stack
         run: echo "SERVICE=$(docker service ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV
@@ -153,10 +153,10 @@ jobs:
               --restart-delay 5s \
               --restart-max-attempts 2 \
               --env SERVICE_NAME=${{ env.SERVICE_NAME }} \
-              --env PORT=${{ inputs.target_port }} \
+              --env PORT=${{ needs.define.outputs.targetPort }} \
               --env NODE_ENV=${{ needs.define.outputs.nodeEnv }} \
               --network public \
-              --publish published=${{ needs.define.outputs.published_port }},target=${{ needs.define.outputs.target_port }},mode=ingress \
+              --publish published=${{ needs.define.outputs.publishedPort }},target=${{ needs.define.outputs.targetPort }},mode=ingress \
               --mount type=bind,source=/etc/timezone,target=/etc/timezone,readonly \
               --mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
               --mount source=${{ env.SERVICE_NAME }}_logs,target=/usr/src/app/logs \

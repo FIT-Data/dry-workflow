@@ -38,26 +38,26 @@ jobs:
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
-            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
-            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
-            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
           else
             manifest=$(cat release.yml)
-            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)"
-            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)"
-            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)"
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
           fi
 
       - id: nodeEnv

@@ -155,8 +155,7 @@ jobs:
               --env SERVICE_NAME=${{ env.SERVICE_NAME }} \
               --env PORT=${{ needs.define.outputs.targetPort }} \
               --env NODE_ENV=${{ needs.define.outputs.nodeEnv }} \
-              --network=host \
-              --network public \
+              --network host \
               --publish published=${{ needs.define.outputs.publishedPort }},target=${{ needs.define.outputs.targetPort }},mode=ingress \
               --limit-cpu 1.0 \
               --limit-memory 2048M \

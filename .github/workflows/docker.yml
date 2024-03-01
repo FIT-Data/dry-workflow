@@ -44,7 +44,7 @@ jobs:
             manifest=$(cat development.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
             echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
-          elif ${{endsWith(github.event.ref, 'staging')}}
+          elif ${{endsWith(github.event.ref, 'development')}}
           then
             manifest=$(cat staging.yml)
             echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
